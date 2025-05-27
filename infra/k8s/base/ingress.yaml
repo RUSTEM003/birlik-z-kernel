@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: birlik-platform-ingress
+  namespace: birlik-platform
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "birlik-platform-ip"
+    networking.gke.io/managed-certificates: "birlik-platform-cert"
+    networking.gke.io/v1beta1.FrontendConfig: "birlik-frontend-config"
+spec:
+  rules:
+  - host: api.birlik-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-services
+            port:
+              number: 8080
+  - host: app.birlik-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-frontend
+            port:
+              number: 3000
+  - host: core.birlik-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: z-kernel-core
+            port:
+              number: 8000
