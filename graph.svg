@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <style>
+    .node { fill: #69b3a2; stroke: #fff; stroke-width: 2px; }
+    .link { stroke: #999; stroke-opacity: 0.6; stroke-width: 1px; }
+    .label { font-family: Arial; font-size: 12px; text-anchor: middle; }
+  </style>
+  
+  <!-- Core Z-Kernel -->
+  <circle class="node" cx="400" cy="300" r="50" />
+  <text class="label" x="400" y="300">Z-KERNEL</text>
+  
+  <!-- API Services -->
+  <circle class="node" cx="250" cy="150" r="30" />
+  <text class="label" x="250" y="150">API</text>
+  <line class="link" x1="400" y1="300" x2="250" y2="150" />
+  
+  <!-- Web Frontend -->
+  <circle class="node" cx="550" cy="150" r="30" />
+  <text class="label" x="550" y="150">Web</text>
+  <line class="link" x1="400" y1="300" x2="550" y2="150" />
+  
+  <!-- Mobile App -->
+  <circle class="node" cx="550" cy="450" r="30" />
+  <text class="label" x="550" y="450">Mobile</text>
+  <line class="link" x1="400" y1="300" x2="550" y2="450" />
+  
+  <!-- Desktop App -->
+  <circle class="node" cx="250" cy="450" r="30" />
+  <text class="label" x="250" y="450">Desktop</text>
+  <line class="link" x1="400" y1="300" x2="250" y2="450" />
+  
+  <!-- API Microservices -->
+  <circle class="node" cx="150" cy="100" r="20" />
+  <text class="label" x="150" y="100">Exchange</text>
+  <line class="link" x1="250" y1="150" x2="150" y2="100" />
+  
+  <circle class="node" cx="200" cy="50" r="20" />
+  <text class="label" x="200" y="50">Real Estate</text>
+  <line class="link" x1="250" y1="150" x2="200" y2="50" />
+  
+  <circle class="node" cx="300" cy="50" r="20" />
+  <text class="label" x="300" y="50">Vehicles</text>
+  <line class="link" x1="250" y1="150" x2="300" y2="50" />
+  
+  <circle class="node" cx="350" cy="100" r="20" />
+  <text class="label" x="350" y="100">Bank</text>
+  <line class="link" x1="250" y1="150" x2="350" y2="100" />
+  
+  <!-- New API Services -->
+  <circle class="node" cx="100" cy="200" r="20" />
+  <text class="label" x="100" y="200">Metaverse</text>
+  <line class="link" x1="250" y1="150" x2="100" y2="200" />
+  
+  <circle class="node" cx="150" cy="250" r="20" />
+  <text class="label" x="150" y="250">Quantum</text>
+  <line class="link" x1="250" y1="150" x2="150" y2="250" />
+  
+  <circle class="node" cx="100" cy="300" r="20" />
+  <text class="label" x="100" y="300">Space</text>
+  <line class="link" x1="250" y1="150" x2="100" y2="300" />
+  
+  <circle class="node" cx="150" cy="350" r="20" />
+  <text class="label" x="150" y="350">Climate</text>
+  <line class="link" x1="250" y1="150" x2="150" y2="350" />
+  
+  <circle class="node" cx="100" cy="400" r="20" />
+  <text class="label" x="100" y="400">Health</text>
+  <line class="link" x1="250" y1="150" x2="100" y2="400" />
+  
+  <!-- Core Components -->
+  <circle class="node" cx="400" cy="150" r="15" />
+  <text class="label" x="400" y="150">XPCompiler</text>
+  <line class="link" x1="400" y1="300" x2="400" y2="150" />
+  
+  <circle class="node" cx="450" cy="200" r="15" />
+  <text class="label" x="450" y="200">ZAgent</text>
+  <line class="link" x1="400" y1="300" x2="450" y2="200" />
+  
+  <circle class="node" cx="350" cy="200" r="15" />
+  <text class="label" x="350" y="200">DAORouter</text>
+  <line class="link" x1="400" y1="300" x2="350" y2="200" />
+  
+  <circle class="node" cx="450" cy="400" r="15" />
+  <text class="label" x="450" y="400">ZVoice</text>
+  <line class="link" x1="400" y1="300" x2="450" y2="400" />
+  
+  <circle class="node" cx="350" cy="400" r="15" />
+  <text class="label" x="350" y="400">BonusEngine</text>
+  <line class="link" x1="400" y1="300" x2="350" y2="400" />
+  
+  <!-- Title -->
+  <text x="400" y="30" font-family="Arial" font-size="24" text-anchor="middle" font-weight="bold">Birlik Platform Architecture</text>
+  <text x="400" y="570" font-family="Arial" font-size="14" text-anchor="middle">Z-KERNEL Microservices Dependency Graph</text>
+</svg>

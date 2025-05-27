@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #10b981;
+  --accent-color: #8b5cf6;
+  --background-color: #f9fafb;
+  --text-color: #1f2937;
+  --error-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --info-color: #3b82f6;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom components */
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+}
+
+.btn-primary {
+  @apply bg-blue-500 text-white hover:bg-blue-600;
+}
+
+.btn-secondary {
+  @apply bg-green-500 text-white hover:bg-green-600;
+}
+
+.btn-accent {
+  @apply bg-purple-500 text-white hover:bg-purple-600;
+}
+
+.btn-outline {
+  @apply border border-gray-300 bg-transparent hover:bg-gray-100;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.input {
+  @apply px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #111827;
+    --text-color: #f9fafb;
+  }
+  
+  html {
+    color-scheme: dark;
+  }
+  
+  body {
+    color: var(--text-color);
+    background: var(--background-color);
+  }
+  
+  .card {
+    @apply bg-gray-800;
+  }
+  
+  .btn-outline {
+    @apply border-gray-600 hover:bg-gray-700;
+  }
+  
+  .input {
+    @apply border-gray-600 bg-gray-700 text-white focus:ring-blue-500;
+  }
+  
+  .label {
+    @apply text-gray-300;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Multilingual font support */
+.font-ar {
+  font-family: 'Amiri', serif;
+}
+
+.font-zh {
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+/* Market data bar */
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
