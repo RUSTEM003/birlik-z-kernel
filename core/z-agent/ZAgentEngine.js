@@ -40,6 +40,25 @@ class ZAgentEngine {
       User intent: {intent}
       User context: {context}
       
+      Available services:
+      - exchange: Trading and financial exchange services
+      - real_estate: Property management and real estate services
+      - vehicles: Automotive sales and management
+      - dao: Decentralized autonomous organization governance
+      - logistics: Supply chain and logistics management
+      - bank: Banking and financial services
+      - map: Geolocation and mapping services
+      - app: Mobile application services
+      - market: Marketplace and e-commerce
+      - islam: Islamic banking and finance
+      - identity: Identity verification and management
+      - workforce: Workforce management and recruitment
+      - metaverse: Virtual spaces and digital assets
+      - quantum-finance: Quantum-resistant transactions and AI smart contracts
+      - space-economy: Space resources and satellite management
+      - climate: Carbon credits and environmental projects
+      - health: Telemedicine and medical records management
+      
       Based on this information, determine:
       1. The most appropriate service to handle this intent
       2. The specific operation to perform

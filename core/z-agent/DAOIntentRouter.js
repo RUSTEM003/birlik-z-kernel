@@ -47,7 +47,8 @@ class DAOIntentRouter {
     const services = [
       'exchange', 'real_estate', 'vehicles', 'dao', 
       'logistics', 'bank', 'map', 'app',
-      'market', 'islam', 'identity', 'workforce'
+      'market', 'islam', 'identity', 'workforce',
+      'metaverse', 'quantum-finance', 'space-economy', 'climate', 'health'
     ];
     
     services.forEach(service => {
@@ -68,7 +69,7 @@ class DAOIntentRouter {
    */
   initializeGovernanceRules() {
     this.governanceRules.set('default', {
-      priorityOrder: ['identity', 'bank', 'exchange', 'real_estate'],
+      priorityOrder: ['identity', 'bank', 'exchange', 'real_estate', 'health', 'metaverse', 'quantum-finance'],
       loadBalancing: true,
       failover: true,
       maxRetries: 3,
@@ -76,11 +77,19 @@ class DAOIntentRouter {
     });
     
     this.governanceRules.set('high_priority', {
-      priorityOrder: ['identity', 'bank'],
+      priorityOrder: ['identity', 'bank', 'health'],
       loadBalancing: false,
       failover: true,
       maxRetries: 5,
       timeout: 3000,
+    });
+    
+    this.governanceRules.set('innovation', {
+      priorityOrder: ['metaverse', 'quantum-finance', 'space-economy', 'climate'],
+      loadBalancing: true,
+      failover: true,
+      maxRetries: 4,
+      timeout: 4000,
     });
   }
 
@@ -142,6 +151,11 @@ class DAOIntentRouter {
       'dao': 'dao',
       'identity': 'identity',
       'workforce': 'workforce',
+      'metaverse': 'metaverse',
+      'quantum_finance': 'quantum-finance',
+      'space_economy': 'space-economy',
+      'climate': 'climate',
+      'health': 'health',
       'system': 'system',
       'voice': 'system',
     };
