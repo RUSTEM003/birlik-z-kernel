@@ -1,0 +1,360 @@
+name: Birlik Platform CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npx turbo run lint
+
+      - name: Run type checking
+        run: npx turbo run typecheck
+
+      - name: Run tests
+        run: npx turbo run test
+
+  build-web:
+    name: Build Web App
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          npm ci
+
+      - name: Build web app
+        run: |
+          cd apps/web
+          npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-build
+          path: apps/web/.next
+          retention-days: 7
+
+  deploy-web:
+    name: Deploy Web App
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: web-build
+          path: apps/web/.next
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          cd apps/web
+          if [[ "${{ github.event.inputs.environment || 'staging' }}" == "production" ]]; then
+            vercel --prod --token=$VERCEL_TOKEN
+          else
+            vercel --token=$VERCEL_TOKEN
+          fi
+
+  build-mobile:
+    name: Build Mobile App
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd apps/mobile
+          npm ci
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android app
+        run: |
+          cd apps/mobile
+          expo build:android --non-interactive
+
+      - name: Build iOS app
+        run: |
+          cd apps/mobile
+          expo build:ios --non-interactive
+
+  deploy-mobile:
+    name: Deploy Mobile App
+    needs: build-mobile
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Publish to Expo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          cd apps/mobile
+          expo publish --release-channel ${{ github.event.inputs.environment || 'staging' }}
+
+  build-desktop:
+    name: Build Desktop App
+    needs: lint-and-test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd apps/desktop
+          npm ci
+
+      - name: Build Electron app
+        run: |
+          cd apps/desktop
+          npm run electron:build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: desktop-build-${{ matrix.os }}
+          path: |
+            apps/desktop/dist/*.exe
+            apps/desktop/dist/*.dmg
+            apps/desktop/dist/*.AppImage
+            apps/desktop/dist/*.snap
+          retention-days: 7
+
+  deploy-core:
+    name: Deploy Z-Kernel Core
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Build and push Z-Agent Engine
+        run: |
+          cd core/z-agent
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/z-agent-engine:${{ github.sha }} -f Dockerfile.z-agent-engine .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/z-agent-engine:${{ github.sha }}
+
+      - name: Build and push DAO Intent Router
+        run: |
+          cd core/z-agent
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dao-intent-router:${{ github.sha }} -f Dockerfile.dao-intent-router .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/dao-intent-router:${{ github.sha }}
+
+      - name: Build and push Z-Voice Interface
+        run: |
+          cd core/z-agent
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/z-voice-interface:${{ github.sha }} -f Dockerfile.z-voice-interface .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/z-voice-interface:${{ github.sha }}
+
+      - name: Setup Kubernetes
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
+          location: ${{ secrets.GKE_CLUSTER_LOCATION }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          # Update image tags in deployment manifests
+          sed -i "s|gcr.io/birlik-platform/z-agent-engine:latest|gcr.io/${{ secrets.GCP_PROJECT_ID }}/z-agent-engine:${{ github.sha }}|g" infra/k8s/base/deployment.yaml
+          sed -i "s|gcr.io/birlik-platform/dao-intent-router:latest|gcr.io/${{ secrets.GCP_PROJECT_ID }}/dao-intent-router:${{ github.sha }}|g" infra/k8s/base/deployment.yaml
+          sed -i "s|gcr.io/birlik-platform/z-voice-interface:latest|gcr.io/${{ secrets.GCP_PROJECT_ID }}/z-voice-interface:${{ github.sha }}|g" infra/k8s/base/deployment.yaml
+          
+          # Apply Kubernetes manifests
+          kubectl apply -f infra/k8s/base/namespace.yaml
+          kubectl apply -f infra/k8s/base/deployment.yaml
+          kubectl apply -f infra/k8s/base/service.yaml
+          kubectl apply -f infra/k8s/base/ingress.yaml
+
+  deploy-infrastructure:
+    name: Deploy Infrastructure
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.0.0
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform
+          terraform init
+
+      - name: Terraform Plan
+        run: |
+          cd infra/terraform
+          terraform plan -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -var="region=${{ secrets.GCP_REGION }}" -out=tfplan
+
+      - name: Terraform Apply
+        if: github.event_name == 'push' || github.event.inputs.environment == 'production'
+        run: |
+          cd infra/terraform
+          terraform apply -auto-approve tfplan
+
+  notify:
+    name: Notify Deployment Status
+    needs: [deploy-web, deploy-mobile, deploy-core, deploy-infrastructure]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify Success
+        if: ${{ success() }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ Birlik Platform deployment to ${{ github.event.inputs.environment || 'staging' }} successful! 🚀",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *Birlik Platform deployment successful!* 🚀\n\n*Environment:* ${{ github.event.inputs.environment || 'staging' }}\n*Triggered by:* ${{ github.actor }}\n*Commit:* ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Failure
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ Birlik Platform deployment to ${{ github.event.inputs.environment || 'staging' }} failed! 🔥",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "❌ *Birlik Platform deployment failed!* 🔥\n\n*Environment:* ${{ github.event.inputs.environment || 'staging' }}\n*Triggered by:* ${{ github.actor }}\n*Commit:* ${{ github.sha }}\n\n*Check the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details.*"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
