@@ -10,19 +10,9 @@
 
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const winston = require('winston');
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  defaultMeta: { service: 'api-exchange' },
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-    new winston.transports.File({ filename: 'api-exchange.log' }),
-  ],
-});
+const logger = require('../../utils/logger');
+const bonusEngine = require('../../utils/BonusEngine');
+const { trackBonusPoints, getBonusInfo, useBonusPoints } = require('../../middleware/bonus');
 
 const router = express.Router();
 
@@ -54,7 +44,7 @@ router.get('/orderbook', (req, res) => {
   }
 });
 
-router.post('/order', (req, res) => {
+router.post('/order', trackBonusPoints('exchange', 'create_order'), (req, res) => {
   try {
     const { symbol, side, type, quantity, price, user_id } = req.body;
     
@@ -119,7 +109,7 @@ router.get('/nft/marketplace', (req, res) => {
   }
 });
 
-router.post('/nft/mint', (req, res) => {
+router.post('/nft/mint', trackBonusPoints('exchange', 'mint_nft'), (req, res) => {
   try {
     const { name, description, creator_id, image_url, price, currency } = req.body;
     
@@ -185,7 +175,7 @@ router.get('/sto/market', (req, res) => {
   }
 });
 
-router.post('/sto/invest', (req, res) => {
+router.post('/sto/invest', trackBonusPoints('exchange', 'sto_invest'), (req, res) => {
   try {
     const { sto_id, investor_id, amount } = req.body;
     
@@ -248,7 +238,7 @@ router.get('/energy/pools', (req, res) => {
   }
 });
 
-router.post('/energy/trade', (req, res) => {
+router.post('/energy/trade', trackBonusPoints('exchange', 'energy_trade'), (req, res) => {
   try {
     const { pool_id, user_id, amount, type } = req.body;
     
