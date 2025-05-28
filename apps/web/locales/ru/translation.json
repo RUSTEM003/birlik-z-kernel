@@ -20,7 +20,17 @@
     "back": "Назад",
     "next": "Далее",
     "submit": "Отправить",
-    "language": "Язык"
+    "language": "Язык",
+    "footer_description": "Глобальная цифровая платформа нового поколения",
+    "services": "Услуги",
+    "company": "Компания",
+    "about": "О нас",
+    "careers": "Карьера",
+    "privacy": "Конфиденциальность",
+    "terms": "Условия использования",
+    "connect": "Связаться с нами",
+    "all_rights_reserved": "Все права защищены",
+    "cookies": "Файлы cookie"
   },
   "navigation": {
     "home": "Главная",
@@ -35,7 +45,12 @@
     "market": "Маркет",
     "islam": "Ислам",
     "identity": "Идентификация",
-    "workforce": "Трудоустройство"
+    "workforce": "Трудоустройство",
+    "metaverse": "Метавселенная",
+    "quantum_finance": "Квантовые финансы",
+    "space_economy": "Космическая экономика",
+    "climate": "Климат",
+    "health": "Здоровье"
   },
   "auth": {
     "email": "Email",
